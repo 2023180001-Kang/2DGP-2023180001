@@ -18,6 +18,7 @@ def move_circle():
         clear_canvas()
         character.draw(x, y)
         update_canvas()
+        delay(0.1)
     pass
 
 def move_rectangle():
