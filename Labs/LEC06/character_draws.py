@@ -31,9 +31,7 @@ def move_top():
         clear_canvas()
 
         current_y = y + plus
-        character.draw(x, current_y)
-        update_canvas()
-        delay(0.01)
+        draw_character(x, current_y)
     return x, current_y
 
 
