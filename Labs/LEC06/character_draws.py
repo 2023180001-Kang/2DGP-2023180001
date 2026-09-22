@@ -71,11 +71,20 @@ def move_rectangle():
     move_left(x2, y2)
     pass
 
+def moveA_TO_B():
+    pass
+
+def moveB_TO_C():
+    pass
+
+def moveC_TO_A():
+    pass
+
 def move_triangle():
     print("triangle")
-    # moveA_TO_B()
-    # moveB_TO_C()
-    # moveC_TO_A()
+    moveA_TO_B()
+    moveB_TO_C()
+    moveC_TO_A()
     pass
 
 while True:
