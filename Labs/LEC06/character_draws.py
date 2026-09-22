@@ -73,7 +73,16 @@ def move_rectangle():
 
 def moveA_TO_B():
     print("A to B")
-    pass
+    x = 100
+    y = 100
+
+    for plus in range(601):
+
+        current_x = x + plus
+
+        draw_character(current_x, y)
+
+    return current_x, y
 
 def moveB_TO_C():
     print("B to C")
@@ -86,8 +95,8 @@ def moveC_TO_A():
 def move_triangle():
     print("triangle")
     moveA_TO_B()
-    moveB_TO_C()
-    moveC_TO_A()
+    # moveB_TO_C()
+    # moveC_TO_A()
     pass
 
 while True:
