@@ -73,6 +73,9 @@ def move_rectangle():
 
 def move_triangle():
     print("triangle")
+    # moveA_TO_B()
+    # moveB_TO_C()
+    # moveC_TO_A()
     pass
 
 while True:
