@@ -30,7 +30,6 @@ def move_top():
 
         current_y = y + plus
         character.draw(x, current_y)
-        print("y:", current_y) 
         update_canvas()
         delay(0.01)
     return x, current_y
@@ -43,12 +42,24 @@ def move_right(x, y):
 
         current_x = x + plus
         character.draw(current_x, y)
+        print("current_x:", current_x)
+        update_canvas()
+        delay(0.01)
+    return current_x, y
+
+
+def move_bottom(x1, y1):
+    print("bottom")
+    for minus in range(301):
+        clear_canvas()
+
+        current_y = y1 - minus
+        character.draw(x1, current_y)
+        print("bottom y:", current_y)
         update_canvas()
         delay(0.01)
 
 
-def move_bottom():
-    print("bottom")
 def move_left():
     print("left")
     
@@ -58,8 +69,8 @@ def move_left():
 def move_rectangle():
     print("rectangle")
     x, y = move_top()
-    move_right(x, y)
-    # move_bottom()
+    x1, y1 = move_right(x, y)
+    move_bottom(x1, y1)
     # move_left()
     pass
 
