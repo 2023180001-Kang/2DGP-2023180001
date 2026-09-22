@@ -60,9 +60,7 @@ def move_left(x2, y2):
     for minus in range(401):
         clear_canvas()
         current_x = x2 - minus
-        character.draw(current_x, y2)
-        update_canvas()
-        delay(0.01)
+        draw_character(current_x, y2)
 
 
 def move_rectangle():
