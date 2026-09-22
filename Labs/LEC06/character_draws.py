@@ -23,9 +23,9 @@ def move_circle():
 
 def move_top():
     print("top")
-    x = 600
-    y = 200
-    for plus in range(401):
+    x = 200
+    y = 300
+    for plus in range(270):
         clear_canvas()
 
         current_y = y + plus
@@ -33,16 +33,16 @@ def move_top():
         print("y:", current_y) 
         update_canvas()
         delay(0.01)
+    return x, current_y
 
 
-
-def move_right():
+def move_right(x, y):
     print("right")
-    x = 600
-    y = 100
-    for plus in range(400):
+    for plus in range(401):
         clear_canvas()
-        character.draw(x + plus, y)
+
+        current_x = x + plus
+        character.draw(current_x, y)
         update_canvas()
         delay(0.01)
 
@@ -57,8 +57,8 @@ def move_left():
 
 def move_rectangle():
     print("rectangle")
-    move_top()
-    # move_right()
+    x, y = move_top()
+    move_right(x, y)
     # move_bottom()
     # move_left()
     pass
