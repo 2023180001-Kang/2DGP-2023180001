@@ -29,13 +29,16 @@ def move_bottom():
     print("bottom")
 def move_left():
     print("left")
+    
+    # character.draw()
+
 
 def move_rectangle():
     print("rectangle")
-    move_left()
     move_top()
     move_right()
     move_bottom()
+    move_left()
     pass
 
 def move_triangle():
@@ -43,7 +46,7 @@ def move_triangle():
     pass
 
 while True:
-    move_circle()
+    # move_circle()
     move_rectangle()
     # move_triangle()
     # pass
