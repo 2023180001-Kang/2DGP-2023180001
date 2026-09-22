@@ -25,6 +25,7 @@ def move_rectangle():
     print("rectangle")
     # move_top()
     # move_right()
+    # move_bottom()
     pass
 
 def move_triangle():
