@@ -6,6 +6,9 @@ open_canvas(800, 600)
 
 character = load_image('character.png')
 
+def draw_character(x, y):
+    pass
+
 def move_circle():
     print("circle")
     for degree in range(361):
