@@ -84,19 +84,38 @@ def moveA_TO_B():
 
     return current_x, y
 
-def moveB_TO_C():
+def moveB_TO_C(x, y):
     print("B to C")
-    pass
 
-def moveC_TO_A():
+    for step in range(401):
+        t = step/400
+
+        current_x = x - 300 * t
+        current_y = y + 400 * t
+
+        draw_character(current_x, current_y)
+
+    return current_x, current_y
+    
+
+def moveC_TO_A(x, y):
     print("C to A")
-    pass
+
+    for step in range(401):
+        t = step/400
+
+        current_x = x - 300 * t
+        current_y = y - 400 * t
+
+        draw_character(current_x, current_y)
+    return current_x, current_y
+    
 
 def move_triangle():
     print("triangle")
-    moveA_TO_B()
-    # moveB_TO_C()
-    # moveC_TO_A()
+    x, y = moveA_TO_B()
+    x, y = moveB_TO_C(x, y)
+    x, y = moveC_TO_A(x, y)
     pass
 
 while True:
