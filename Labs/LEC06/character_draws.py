@@ -9,7 +9,9 @@ def move_circle():
     print("circle")
     for degree in range(360):
         theta = math.radians(degree)
+        x = 400 + 200 * math.cos(theta)
     print(theta)
+    print(x)
     clear_canvas()
     character.draw(400, 300)
     update_canvas()
