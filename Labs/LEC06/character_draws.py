@@ -1,5 +1,6 @@
 # 실습 과제 진행
 from pico2d import *
+import math
 
 open_canvas(800, 600)
 
@@ -11,12 +12,12 @@ def move_circle():
         theta = math.radians(degree)
         x = 400 + 200 * math.cos(theta)
         y = 300 + 200 * math.sin(theta)
-    print("Theta:",theta)
-    print("X:", x)
-    print("Y:", y)
-    clear_canvas()
-    character.draw(400, 300)
-    update_canvas()
+        # print("Theta:",theta)
+        # print("X:", x)
+        # print("Y:", y)
+        clear_canvas()
+        character.draw(x, y)
+        update_canvas()
     pass
 
 def move_rectangle():
@@ -29,9 +30,9 @@ def move_triangle():
 
 while True:
     move_circle()
-    move_rectangle()
-    move_triangle()
-    pass
+    # move_rectangle()
+    # move_triangle()
+    # pass
 
     # break
 
