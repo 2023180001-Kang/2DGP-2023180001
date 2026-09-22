@@ -41,9 +41,7 @@ def move_right(x, y):
         clear_canvas()
 
         current_x = x + plus
-        character.draw(current_x, y)
-        update_canvas()
-        delay(0.01)
+        draw_character(current_x, y)
     return current_x, y
 
 
