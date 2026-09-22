@@ -51,9 +51,7 @@ def move_bottom(x1, y1):
         clear_canvas()
 
         current_y = y1 - minus
-        character.draw(x1, current_y)
-        update_canvas()
-        delay(0.01)
+        draw_character(x1, current_y)
     return x1, current_y
 
 
