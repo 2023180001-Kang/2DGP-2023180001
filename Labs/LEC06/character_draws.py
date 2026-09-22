@@ -23,6 +23,7 @@ def move_circle():
 
 def move_rectangle():
     print("rectangle")
+    # move_top()
     pass
 
 def move_triangle():
