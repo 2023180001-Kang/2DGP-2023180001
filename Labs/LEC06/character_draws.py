@@ -11,20 +11,18 @@ def draw_character(x, y):
     character.draw(x, y)
     update_canvas()
     delay(0.01)
-    pass
+    
 
 def move_circle():
-    print("circle")
     for degree in range(361):
         theta = math.radians(degree)
         x = 400 + 200 * math.cos(theta)
         y = 300 + 200 * math.sin(theta)
 
         draw_character(x, y)
-    pass
+    
 
 def move_top():
-    print("top")
     x = 200
     y = 300
     for plus in range(201):
@@ -36,7 +34,6 @@ def move_top():
 
 
 def move_right(x, y):
-    print("right")
     for plus in range(401):
         clear_canvas()
 
@@ -46,7 +43,6 @@ def move_right(x, y):
 
 
 def move_bottom(x1, y1):
-    print("bottom")
     for minus in range(201):
         clear_canvas()
 
@@ -56,7 +52,6 @@ def move_bottom(x1, y1):
 
 
 def move_left(x2, y2):
-    print("left")
     for minus in range(401):
         clear_canvas()
         current_x = x2 - minus
@@ -64,15 +59,13 @@ def move_left(x2, y2):
 
 
 def move_rectangle():
-    print("rectangle")
     x, y = move_top()
     x1, y1 = move_right(x, y)
     x2, y2 = move_bottom(x1, y1)
     move_left(x2, y2)
-    pass
+    
 
 def moveA_TO_B():
-    print("A to B")
     x = 100
     y = 100
 
@@ -85,8 +78,6 @@ def moveA_TO_B():
     return current_x, y
 
 def moveB_TO_C(x, y):
-    print("B to C")
-
     for step in range(401):
         t = step/400
 
@@ -99,8 +90,6 @@ def moveB_TO_C(x, y):
     
 
 def moveC_TO_A(x, y):
-    print("C to A")
-
     for step in range(401):
         t = step/400
 
@@ -112,17 +101,16 @@ def moveC_TO_A(x, y):
     
 
 def move_triangle():
-    print("triangle")
     x, y = moveA_TO_B()
     x, y = moveB_TO_C(x, y)
     x, y = moveC_TO_A(x, y)
-    pass
+    
 
 while True:
     move_circle()
     move_rectangle()
     move_triangle()
-    # pass
+   
 
     # break
 
