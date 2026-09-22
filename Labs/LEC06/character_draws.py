@@ -25,15 +25,28 @@ def move_top():
     print("top")
     x = 600
     y = 200
-    for plus in range(400):
+    for plus in range(401):
         clear_canvas()
-        character.draw(x, y + plus)
+
+        current_y = y + plus
+        character.draw(x, current_y)
+        print("y:", current_y) 
         update_canvas()
-        delay(0.01)    
+        delay(0.01)
+
 
 
 def move_right():
     print("right")
+    x = 600
+    y = 100
+    for plus in range(400):
+        clear_canvas()
+        character.draw(x + plus, y)
+        update_canvas()
+        delay(0.01)
+
+
 def move_bottom():
     print("bottom")
 def move_left():
