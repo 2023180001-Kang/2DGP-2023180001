@@ -8,7 +8,7 @@ character = load_image('character.png')
 
 def move_circle():
     print("circle")
-    for degree in range(360):
+    for degree in range(361):
         theta = math.radians(degree)
         x = 400 + 200 * math.cos(theta)
         y = 300 + 200 * math.sin(theta)
@@ -23,6 +23,15 @@ def move_circle():
 
 def move_top():
     print("top")
+    x = 600
+    y = 200
+    for plus in range(400):
+        clear_canvas()
+        character.draw(x, y + plus)
+        update_canvas()
+        delay(0.01)    
+
+
 def move_right():
     print("right")
 def move_bottom():
@@ -36,9 +45,9 @@ def move_left():
 def move_rectangle():
     print("rectangle")
     move_top()
-    move_right()
-    move_bottom()
-    move_left()
+    # move_right()
+    # move_bottom()
+    # move_left()
     pass
 
 def move_triangle():
@@ -46,7 +55,7 @@ def move_triangle():
     pass
 
 while True:
-    # move_circle()
+    move_circle()
     move_rectangle()
     # move_triangle()
     # pass
