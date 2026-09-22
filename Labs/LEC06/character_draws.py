@@ -18,9 +18,7 @@ def move_circle():
         theta = math.radians(degree)
         x = 400 + 200 * math.cos(theta)
         y = 300 + 200 * math.sin(theta)
-        # print("Theta:",theta)
-        # print("X:", x)
-        # print("Y:", y)
+
         clear_canvas()
         character.draw(x, y)
         update_canvas()
@@ -48,7 +46,6 @@ def move_right(x, y):
 
         current_x = x + plus
         character.draw(current_x, y)
-        print("current_x:", current_x)
         update_canvas()
         delay(0.01)
     return current_x, y
