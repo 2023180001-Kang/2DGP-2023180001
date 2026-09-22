@@ -72,12 +72,15 @@ def move_rectangle():
     pass
 
 def moveA_TO_B():
+    print("A to B")
     pass
 
 def moveB_TO_C():
+    print("B to C")
     pass
 
 def moveC_TO_A():
+    print("C to A")
     pass
 
 def move_triangle():
@@ -90,7 +93,7 @@ def move_triangle():
 while True:
     move_circle()
     move_rectangle()
-    # move_triangle()
+    move_triangle()
     # pass
 
     # break
