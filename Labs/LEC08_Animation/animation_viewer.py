@@ -4,6 +4,9 @@ import math
 
 open_canvas(800, 600)
 
+# 캐릭터 png를 추가
+character = load_image('SoldierSpriteSheet.png')
+
 # 캐릭터 4개 움직임 함수
 def wallk_character():
     print("Wallk Character")
