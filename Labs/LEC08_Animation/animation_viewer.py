@@ -27,6 +27,11 @@ def attack_character():
 # 첫 프레임 변수 선언
 frame = 0
 
+# 첫 이동을 위한 반복문 구현 시작
+for x in range(0, 800, 5):
+    pass
+
+
 # while True:
     # clear_canvas()
     # wallk_character()
