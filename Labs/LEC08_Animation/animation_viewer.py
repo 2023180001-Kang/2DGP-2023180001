@@ -1,57 +1,43 @@
-# 실습 과제 실행
-from pico2d import *
-import math
+from pathlib import Path
 
-open_canvas(800, 600)
-
-# 캐릭터 png를 추가
-# 캐릭터 sheet를 과제 규격에 맞게 변경함
-# 이전 버전은 규격에 맞지 않음
-character = load_image('SoldierSheet.png')
-
-# 바닥에 grass png를 추가
-grass = load_image('grass.png')
-
-# 캐릭터 4개 움직임 함수
-def wallk_character():
-    print("Wallk Character")
-    pass
-
-def run_character():
-    print("Run Character")
-    pass
-
-def jump_character():
-    print("Jump Character")
-    pass
-
-def attack_character():
-    print("Attack Character")
-    pass
-
-# 첫 프레임 변수 선언
-frame = 0
-
-# 첫 이동을 위한 반복문 구현 시작
-# 캐릭터 변경 후 사이즈 다시 100 100으로 변경
-for x in range(0, 800, 5):
-    clear_canvas()
-    grass.draw(400, 30)
-    character.clip_draw(frame * 100, 0, 100, 100, x, 90)
-    update_canvas()
-    frame = (frame + 1) % 8
-    delay(0.05)
-    pass
+import pico2d
 
 
-# while True:
-    # clear_canvas()
-    # wallk_character()
-    # run_character()
-    # jump_character()
-    # attack_character()
-    # update_canvas()
-    # delay(0.01)
+CANVAS_WIDTH = 800
+CANVAS_HEIGHT = 600
+ASSET_DIR = Path(__file__).resolve().parent
 
 
+def main():
+    pico2d.open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+    try:
+        character = pico2d.load_image(str(ASSET_DIR / "atlas.png"))
+        grass = pico2d.load_image(str(ASSET_DIR / "grass.png"))
+        frame = 0
+        running = True
 
+        while running:
+            for event in pico2d.get_events():
+                if event.type == pico2d.SDL_QUIT or (
+                    event.type == pico2d.SDL_KEYDOWN
+                    and event.key == pico2d.SDLK_ESCAPE
+                ):
+                    running = False
+            if not running:
+                break
+
+            pico2d.clear_canvas()
+            grass.draw(CANVAS_WIDTH // 2, 30)
+            character.clip_draw(
+                frame * 33, character.h - 32, 33, 32,
+                CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2,
+            )
+            pico2d.update_canvas()
+            frame = (frame + 1) % 4
+            pico2d.delay(0.1)
+    finally:
+        pico2d.close_canvas()
+
+
+if __name__ == "__main__":
+    main()
