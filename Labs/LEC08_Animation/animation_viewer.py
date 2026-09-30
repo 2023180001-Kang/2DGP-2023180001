@@ -24,13 +24,15 @@ def attack_character():
     print("Attack Character")
     pass
 
+# 첫 프레임 변수 선언
+frame = 0
 
 while True:
     clear_canvas()
-    wallk_character()
-    run_character()
-    jump_character()
-    attack_character()
+    # wallk_character()
+    # run_character()
+    # jump_character()
+    # attack_character()
     update_canvas()
     delay(0.01)
 
