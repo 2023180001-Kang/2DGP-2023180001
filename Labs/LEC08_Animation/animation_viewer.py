@@ -6,20 +6,28 @@ open_canvas(800, 600)
 
 # 캐릭터 4개 움직임 함수
 def wallk_character():
+    print("Wallk Character")
     pass
 
 def run_character():
+    print("Run Character")
     pass
 
 def jump_character():
+    print("Jump Character")
     pass
 
 def attack_character():
+    print("Attack Character")
     pass
 
 
 while True:
     clear_canvas()
+    wallk_character()
+    run_character()
+    jump_character()
+    attack_character()
     update_canvas()
     delay(0.01)
 
