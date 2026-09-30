@@ -63,7 +63,7 @@ ANIMATIONS = (
     atlas_animation("Jump", 5, (
         (4, 9, 27, 30), (5, 7, 26, 29),
     ), 160),
-    atlas_animation("Attack", 3, (
+    atlas_animation("Crouch", 3, (
         (6, 10, 24, 32), (8, 13, 28, 32), (8, 13, 28, 32),
     ), 120),
     atlas_animation("Roll", 9, (
@@ -130,13 +130,46 @@ def draw_frame(character, frame):
     )
 
 
+def draw_status(font, playback):
+    pico2d.draw_rectangle(
+        0, 550, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1,
+        29, 47, 39, filled=True,
+    )
+    pico2d.draw_rectangle(
+        0, 0, CANVAS_WIDTH - 1, 49, 29, 47, 39, filled=True,
+    )
+    color = (240, 245, 235)
+    font.draw(24, 575, "FOXY / ANIMATION VIEWER", color)
+    font.draw(
+        480, 575,
+        f"{playback.animation.name} ({playback.animation_index + 1}/{len(playback.animations)})",
+        color,
+    )
+    loop = min(playback.completed_loops + 1, REPEAT_COUNT)
+    font.draw(
+        24, 25,
+        f"Loop {loop}/{REPEAT_COUNT}  Frame {playback.frame_index + 1}/{len(playback.animation.frames)}",
+        color,
+    )
+    status = (
+        f"Pause: {(PAUSE_MS - playback.elapsed_ms) / 1000:.1f}s"
+        if playback.pausing else "Playing"
+    )
+    font.draw(360, 25, status, color)
+    font.draw(660, 25, "ESC: Exit", color)
+
+
 def main():
     pico2d.open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     try:
+        pico2d.hide_lattice()
         character = pico2d.load_image(str(ASSET_DIR / "atlas.png"))
         if (character.w, character.h) != (ATLAS_WIDTH, ATLAS_HEIGHT):
             raise ValueError("atlas.png must be 198 x 384 for the manual frame table")
         grass = pico2d.load_image(str(ASSET_DIR / "grass.png"))
+        font = pico2d.load_font(
+            str(Path(pico2d.__file__).resolve().parent / "data" / "ConsolaMalgun.ttf"), 20,
+        )
         playback = Playback()
         previous_time = monotonic_ns()
         running = True
@@ -156,8 +189,9 @@ def main():
             previous_time = current_time
 
             pico2d.clear_canvas()
-            grass.draw(CANVAS_WIDTH // 2, 30)
+            grass.draw(CANVAS_WIDTH // 2, 45, CANVAS_WIDTH, 62)
             draw_frame(character, playback.frame)
+            draw_status(font, playback)
             pico2d.update_canvas()
             pico2d.delay(0.008)
     finally:
