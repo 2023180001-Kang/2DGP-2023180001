@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import ceil
+import json
 from pathlib import Path
 from time import monotonic_ns
 
@@ -9,12 +9,13 @@ import pico2d
 CANVAS_WIDTH = 800
 CANVAS_HEIGHT = 600
 ASSET_DIR = Path(__file__).resolve().parent
-ATLAS_WIDTH = 198
-ATLAS_HEIGHT = 384
-CELL_WIDTH = 33
-CELL_HEIGHT = 32
 REPEAT_COUNT = 5
 PAUSE_MS = 1000
+# The shortest visible Foxy pose is 17 pixels tall: 17 * 18 = 306.
+DISPLAY_SCALE = 18
+CHARACTER_X = CANVAS_WIDTH / 2
+# Compensate for the empty space above Foxy in the original source cells.
+CHARACTER_Y = CANVAS_HEIGHT / 2 + 3.5 * DISPLAY_SCALE
 
 
 @dataclass(frozen=True)
@@ -25,63 +26,59 @@ class Frame:
     height: int
     offset_x: float
     offset_y: float
+    duration_ms: int
 
 
 @dataclass(frozen=True)
 class Animation:
     name: str
     frames: tuple[Frame, ...]
-    frame_ms: int
 
 
-def atlas_animation(name, row, bounds, frame_ms):
-    # Trim transparent padding, but retain each pose's position in its cell.
-    frames = tuple(
-        Frame(
-            column * CELL_WIDTH + left,
-            row * CELL_HEIGHT + top,
-            right - left,
-            bottom - top,
-            (left + right) / 2 - CELL_WIDTH / 2,
-            19.5 - (top + bottom) / 2,
-        )
-        for column, (left, top, right, bottom) in enumerate(bounds)
+def load_animations(json_path):
+    json_path = Path(json_path)
+    with json_path.open(encoding="utf-8") as source:
+        data = json.load(source)
+
+    meta = data["meta"]
+    frames = []
+    # Aseprite tag indices refer to the export order, not filename sorting.
+    for record in data["frames"].values():
+        if record["rotated"]:
+            raise ValueError("Rotated atlas frames are not supported")
+        if record["duration"] <= 0:
+            raise ValueError("Frame duration must be positive")
+        rect = record["frame"]
+        sprite = record["spriteSourceSize"]
+        original = record["sourceSize"]
+        frames.append(Frame(
+            rect["x"], rect["y"], rect["w"], rect["h"],
+            sprite["x"] + rect["w"] / 2 - original["w"] / 2,
+            original["h"] / 2 - sprite["y"] - rect["h"] / 2,
+            record["duration"],
+        ))
+
+    animations = []
+    for tag in meta["frameTags"]:
+        if tag["direction"] != "forward":
+            raise ValueError(f"Unsupported tag direction: {tag['direction']}")
+        animation_frames = tuple(frames[tag["from"]:tag["to"] + 1])
+        if not animation_frames:
+            raise ValueError(f"Animation has no frames: {tag['name']}")
+        animations.append(Animation(tag["name"], animation_frames))
+    if not animations:
+        raise ValueError("The atlas must contain animation tags")
+
+    return (
+        json_path.parent / meta["image"],
+        (meta["size"]["w"], meta["size"]["h"]),
+        tuple(animations),
     )
-    return Animation(name, frames, frame_ms)
-
-
-# Temporary visual row mapping, not Aseprite tags. JSON loading comes later.
-ANIMATIONS = (
-    atlas_animation("Idle", 0, (
-        (6, 10, 24, 32), (5, 11, 24, 32),
-        (3, 12, 24, 32), (5, 11, 24, 32),
-    ), 140),
-    atlas_animation("Run", 1, (
-        (6, 10, 24, 32), (5, 9, 25, 31), (6, 10, 24, 32),
-        (7, 10, 25, 32), (8, 9, 25, 31), (7, 10, 25, 32),
-    ), 100),
-    atlas_animation("Jump", 5, (
-        (4, 9, 27, 30), (5, 7, 26, 29),
-    ), 160),
-    atlas_animation("Crouch", 3, (
-        (6, 10, 24, 32), (8, 13, 28, 32), (8, 13, 28, 32),
-    ), 120),
-    atlas_animation("Roll", 9, (
-        (8, 14, 25, 32), (7, 14, 25, 31),
-        (8, 14, 25, 32), (7, 14, 25, 31),
-    ), 100),
-)
-
-# Even the shortest pose occupies at least half the canvas height.
-DISPLAY_SCALE = ceil(
-    CANVAS_HEIGHT / 2
-    / min(frame.height for animation in ANIMATIONS for frame in animation.frames)
-)
 
 
 @dataclass
 class Playback:
-    animations: tuple[Animation, ...] = ANIMATIONS
+    animations: tuple[Animation, ...]
     animation_index: int = 0
     frame_index: int = 0
     completed_loops: int = 0
@@ -100,7 +97,7 @@ class Playback:
         self.elapsed_ms += delta_ms
         # Keep leftover time across both frame and animation transitions.
         while True:
-            duration = PAUSE_MS if self.pausing else self.animation.frame_ms
+            duration = PAUSE_MS if self.pausing else self.frame.duration_ms
             if self.elapsed_ms < duration:
                 break
             self.elapsed_ms -= duration
@@ -124,24 +121,24 @@ def draw_frame(character, frame):
     character.clip_draw(
         frame.left, character.h - frame.top - frame.height,
         frame.width, frame.height,
-        CANVAS_WIDTH / 2 + frame.offset_x * DISPLAY_SCALE,
-        CANVAS_HEIGHT / 2 + frame.offset_y * DISPLAY_SCALE,
+        CHARACTER_X + frame.offset_x * DISPLAY_SCALE,
+        CHARACTER_Y + frame.offset_y * DISPLAY_SCALE,
         frame.width * DISPLAY_SCALE, frame.height * DISPLAY_SCALE,
     )
 
 
 def draw_status(font, playback):
     pico2d.draw_rectangle(
-        0, 550, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1,
+        0, 565, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1,
         29, 47, 39, filled=True,
     )
     pico2d.draw_rectangle(
         0, 0, CANVAS_WIDTH - 1, 49, 29, 47, 39, filled=True,
     )
     color = (240, 245, 235)
-    font.draw(24, 575, "FOXY / ANIMATION VIEWER", color)
+    font.draw(24, 582, "FOXY / ANIMATION VIEWER", color)
     font.draw(
-        480, 575,
+        480, 582,
         f"{playback.animation.name} ({playback.animation_index + 1}/{len(playback.animations)})",
         color,
     )
@@ -160,17 +157,18 @@ def draw_status(font, playback):
 
 
 def main():
+    image_path, atlas_size, animations = load_animations(ASSET_DIR / "Foxy.json")
     pico2d.open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     try:
         pico2d.hide_lattice()
-        character = pico2d.load_image(str(ASSET_DIR / "atlas.png"))
-        if (character.w, character.h) != (ATLAS_WIDTH, ATLAS_HEIGHT):
-            raise ValueError("atlas.png must be 198 x 384 for the manual frame table")
+        character = pico2d.load_image(str(image_path))
+        if (character.w, character.h) != atlas_size:
+            raise ValueError(f"Image size does not match JSON metadata: {image_path.name}")
         grass = pico2d.load_image(str(ASSET_DIR / "grass.png"))
         font = pico2d.load_font(
             str(Path(pico2d.__file__).resolve().parent / "data" / "ConsolaMalgun.ttf"), 20,
         )
-        playback = Playback()
+        playback = Playback(animations)
         previous_time = monotonic_ns()
         running = True
 
