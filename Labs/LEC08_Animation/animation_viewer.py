@@ -5,8 +5,9 @@ import math
 open_canvas(800, 600)
 
 # 캐릭터 png를 추가
-# 캐릭터 png 변경
-character = load_image('SoldierMove.png')
+# 캐릭터 sheet를 과제 규격에 맞게 변경함
+# 이전 버전은 규격에 맞지 않음
+character = load_image('SoldierSheet.png')
 
 # 바닥에 grass png를 추가
 grass = load_image('grass.png')
