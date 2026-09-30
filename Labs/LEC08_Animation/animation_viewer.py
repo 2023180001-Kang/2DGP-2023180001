@@ -31,10 +31,11 @@ def attack_character():
 frame = 0
 
 # 첫 이동을 위한 반복문 구현 시작
+# 사이즈가 커서 발만 보인다
 for x in range(0, 800, 5):
     clear_canvas()
     grass.draw(400, 30)
-    character.clip_draw(frame * 100, 0, 100, 100, x, 90)
+    character.clip_draw(frame * 100, 0, 250, 250, x, 90)
     update_canvas()
     frame = (frame + 1) % 8
     delay(0.05)
