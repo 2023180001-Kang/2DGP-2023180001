@@ -7,6 +7,9 @@ open_canvas(800, 600)
 # 캐릭터 png를 추가
 character = load_image('SoldierSpriteSheet.png')
 
+# 바닥에 grass png를 추가
+grass = load_image('grass.png')
+
 # 캐릭터 4개 움직임 함수
 def wallk_character():
     print("Wallk Character")
@@ -29,6 +32,7 @@ frame = 0
 
 # 첫 이동을 위한 반복문 구현 시작
 for x in range(0, 800, 5):
+    # clear_canvas()
     pass
 
 
