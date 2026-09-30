@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
+from time import monotonic_ns
 
 import pico2d
 
@@ -12,6 +13,8 @@ ATLAS_WIDTH = 198
 ATLAS_HEIGHT = 384
 CELL_WIDTH = 33
 CELL_HEIGHT = 32
+REPEAT_COUNT = 5
+PAUSE_MS = 1000
 
 
 @dataclass(frozen=True)
@@ -28,10 +31,10 @@ class Frame:
 class Animation:
     name: str
     frames: tuple[Frame, ...]
-    frame_seconds: float
+    frame_ms: int
 
 
-def atlas_animation(name, row, bounds, frame_seconds):
+def atlas_animation(name, row, bounds, frame_ms):
     # Trim transparent padding, but retain each pose's position in its cell.
     frames = tuple(
         Frame(
@@ -44,7 +47,7 @@ def atlas_animation(name, row, bounds, frame_seconds):
         )
         for column, (left, top, right, bottom) in enumerate(bounds)
     )
-    return Animation(name, frames, frame_seconds)
+    return Animation(name, frames, frame_ms)
 
 
 # Temporary visual row mapping, not Aseprite tags. JSON loading comes later.
@@ -52,21 +55,21 @@ ANIMATIONS = (
     atlas_animation("Idle", 0, (
         (6, 10, 24, 32), (5, 11, 24, 32),
         (3, 12, 24, 32), (5, 11, 24, 32),
-    ), 0.14),
+    ), 140),
     atlas_animation("Run", 1, (
         (6, 10, 24, 32), (5, 9, 25, 31), (6, 10, 24, 32),
         (7, 10, 25, 32), (8, 9, 25, 31), (7, 10, 25, 32),
-    ), 0.10),
+    ), 100),
     atlas_animation("Jump", 5, (
         (4, 9, 27, 30), (5, 7, 26, 29),
-    ), 0.16),
+    ), 160),
     atlas_animation("Attack", 3, (
         (6, 10, 24, 32), (8, 13, 28, 32), (8, 13, 28, 32),
-    ), 0.12),
+    ), 120),
     atlas_animation("Roll", 9, (
         (8, 14, 25, 32), (7, 14, 25, 31),
         (8, 14, 25, 32), (7, 14, 25, 31),
-    ), 0.10),
+    ), 100),
 )
 
 # Even the shortest pose occupies at least half the canvas height.
@@ -74,6 +77,47 @@ DISPLAY_SCALE = ceil(
     CANVAS_HEIGHT / 2
     / min(frame.height for animation in ANIMATIONS for frame in animation.frames)
 )
+
+
+@dataclass
+class Playback:
+    animations: tuple[Animation, ...] = ANIMATIONS
+    animation_index: int = 0
+    frame_index: int = 0
+    completed_loops: int = 0
+    elapsed_ms: float = 0
+    pausing: bool = False
+
+    @property
+    def animation(self):
+        return self.animations[self.animation_index]
+
+    @property
+    def frame(self):
+        return self.animation.frames[self.frame_index]
+
+    def update(self, delta_ms):
+        self.elapsed_ms += delta_ms
+        # Keep leftover time across both frame and animation transitions.
+        while True:
+            duration = PAUSE_MS if self.pausing else self.animation.frame_ms
+            if self.elapsed_ms < duration:
+                break
+            self.elapsed_ms -= duration
+
+            if self.pausing:
+                self.animation_index = (self.animation_index + 1) % len(self.animations)
+                self.frame_index = 0
+                self.completed_loops = 0
+                self.pausing = False
+            elif self.frame_index == len(self.animation.frames) - 1:
+                self.completed_loops += 1
+                if self.completed_loops == REPEAT_COUNT:
+                    self.pausing = True
+                else:
+                    self.frame_index = 0
+            else:
+                self.frame_index += 1
 
 
 def draw_frame(character, frame):
@@ -93,8 +137,8 @@ def main():
         if (character.w, character.h) != (ATLAS_WIDTH, ATLAS_HEIGHT):
             raise ValueError("atlas.png must be 198 x 384 for the manual frame table")
         grass = pico2d.load_image(str(ASSET_DIR / "grass.png"))
-        animation_index = 0
-        frame_index = 0
+        playback = Playback()
+        previous_time = monotonic_ns()
         running = True
 
         while running:
@@ -107,16 +151,15 @@ def main():
             if not running:
                 break
 
+            current_time = monotonic_ns()
+            playback.update((current_time - previous_time) / 1_000_000)
+            previous_time = current_time
+
             pico2d.clear_canvas()
             grass.draw(CANVAS_WIDTH // 2, 30)
-            animation = ANIMATIONS[animation_index]
-            draw_frame(character, animation.frames[frame_index])
+            draw_frame(character, playback.frame)
             pico2d.update_canvas()
-            pico2d.delay(animation.frame_seconds)
-            frame_index += 1
-            if frame_index == len(animation.frames):
-                frame_index = 0
-                animation_index = (animation_index + 1) % len(ANIMATIONS)
+            pico2d.delay(0.008)
     finally:
         pico2d.close_canvas()
 
