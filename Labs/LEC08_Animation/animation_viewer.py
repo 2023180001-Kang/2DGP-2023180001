@@ -32,7 +32,10 @@ frame = 0
 
 # 첫 이동을 위한 반복문 구현 시작
 for x in range(0, 800, 5):
-    # clear_canvas()
+    clear_canvas()
+    grass.draw(400, 30)
+    update_canvas()
+    delay(0.05)
     pass
 
 
