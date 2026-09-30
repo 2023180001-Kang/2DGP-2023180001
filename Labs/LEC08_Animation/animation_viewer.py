@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic_ns
 
@@ -15,7 +15,7 @@ PAUSE_MS = 1000
 DISPLAY_SCALE = 18
 CHARACTER_X = CANVAS_WIDTH / 2
 # Compensate for the empty space above Foxy in the original source cells.
-CHARACTER_Y = CANVAS_HEIGHT / 2 + 3.5 * DISPLAY_SCALE
+CHARACTER_Y = CANVAS_HEIGHT / 2 + 2.25 * DISPLAY_SCALE
 
 
 @dataclass(frozen=True)
@@ -41,16 +41,43 @@ def load_animations(json_path):
         data = json.load(source)
 
     meta = data["meta"]
+    atlas_size = (meta["size"]["w"], meta["size"]["h"])
+    if any(type(value) is not int or value <= 0 for value in atlas_size):
+        raise ValueError("Atlas size must contain positive integers")
+    records = data["frames"]
+    if not isinstance(records, dict) or not records:
+        raise ValueError("Expected nonempty Aseprite JSON Hash frames")
+
     frames = []
     # Aseprite tag indices refer to the export order, not filename sorting.
-    for record in data["frames"].values():
+    for name, record in records.items():
         if record["rotated"]:
             raise ValueError("Rotated atlas frames are not supported")
-        if record["duration"] <= 0:
-            raise ValueError("Frame duration must be positive")
         rect = record["frame"]
         sprite = record["spriteSourceSize"]
         original = record["sourceSize"]
+        values = (rect["x"], rect["y"], rect["w"], rect["h"], record["duration"])
+        if (
+            any(type(value) is not int for value in values)
+            or min(rect["x"], rect["y"]) < 0
+            or min(rect["w"], rect["h"], record["duration"]) <= 0
+            or rect["x"] + rect["w"] > atlas_size[0]
+            or rect["y"] + rect["h"] > atlas_size[1]
+        ):
+            raise ValueError(f"Invalid frame rectangle or duration: {name}")
+        source_values = (
+            original["w"], original["h"],
+            sprite["x"], sprite["y"], sprite["w"], sprite["h"],
+        )
+        if (
+            any(type(value) is not int for value in source_values)
+            or min(original["w"], original["h"]) <= 0
+            or min(sprite["x"], sprite["y"]) < 0
+            or (sprite["w"], sprite["h"]) != (rect["w"], rect["h"])
+            or sprite["x"] + sprite["w"] > original["w"]
+            or sprite["y"] + sprite["h"] > original["h"]
+        ):
+            raise ValueError(f"Invalid source alignment: {name}")
         frames.append(Frame(
             rect["x"], rect["y"], rect["w"], rect["h"],
             sprite["x"] + rect["w"] / 2 - original["w"] / 2,
@@ -62,16 +89,20 @@ def load_animations(json_path):
     for tag in meta["frameTags"]:
         if tag["direction"] != "forward":
             raise ValueError(f"Unsupported tag direction: {tag['direction']}")
-        animation_frames = tuple(frames[tag["from"]:tag["to"] + 1])
-        if not animation_frames:
-            raise ValueError(f"Animation has no frames: {tag['name']}")
+        start, end = tag["from"], tag["to"]
+        if (
+            type(start) is not int or type(end) is not int
+            or not 0 <= start <= end < len(frames)
+        ):
+            raise ValueError(f"Invalid animation frame range: {tag['name']}")
+        animation_frames = tuple(frames[start:end + 1])
         animations.append(Animation(tag["name"], animation_frames))
     if not animations:
         raise ValueError("The atlas must contain animation tags")
 
     return (
         json_path.parent / meta["image"],
-        (meta["size"]["w"], meta["size"]["h"]),
+        atlas_size,
         tuple(animations),
     )
 
@@ -94,6 +125,8 @@ class Playback:
         return self.animation.frames[self.frame_index]
 
     def update(self, delta_ms):
+        if delta_ms < 0:
+            raise ValueError("Elapsed time must not be negative")
         self.elapsed_ms += delta_ms
         # Keep leftover time across both frame and animation transitions.
         while True:
@@ -157,7 +190,7 @@ def draw_status(font, playback):
 
 
 def main():
-    image_path, atlas_size, animations = load_animations(ASSET_DIR / "Foxy.json")
+    image_path, atlas_size, animations = load_animations(ASSET_DIR / "foxy.json")
     pico2d.open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     try:
         pico2d.hide_lattice()
@@ -187,7 +220,7 @@ def main():
             previous_time = current_time
 
             pico2d.clear_canvas()
-            grass.draw(CANVAS_WIDTH // 2, 45, CANVAS_WIDTH, 62)
+            grass.draw(CANVAS_WIDTH // 2, 22, CANVAS_WIDTH, 62)
             draw_frame(character, playback.frame)
             draw_status(font, playback)
             pico2d.update_canvas()
